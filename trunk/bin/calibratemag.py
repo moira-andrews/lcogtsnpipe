@@ -43,7 +43,7 @@ def get_image_data(lista, magcol=None, errcol=None, refcat=None):
         t.rename_column(magcol, 'instmag')
         t.rename_column(errcol, 'dinstmag')
     elif magcol is not None and errcol is not None:
-        print('Cross-matching {} catalogs. This may take a while...'.format(len(lista)))
+        print('Cross-matching {0} catalogs. This may take a while...'.format(len(lista)))
         catalogs = []
         badrows = []
         for i, image in enumerate(t):

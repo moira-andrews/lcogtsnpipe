@@ -21,14 +21,13 @@ else:
 
 for system in args.field:
     targets = lsc.mysqldef.query(['select id, ra0, dec0 from targets where ' + system + '_cat' + cond], lsc.conn)
-    print len(targets), 'targets with no', system, 'catalog'
-    print
+    print(str(len(targets)) + ' targets with no ' + str(system) + ' catalog\n')
     source = 'panstarrs' if system == 'sloan' and args.panstarrs else system
     for target in targets:
         tid = str(target['id'])
-        print 'Target ID', tid
+        print('Target ID', tid)
         names = lsc.mysqldef.query(['select name from targetnames where targetid=' + tid], lsc.conn)
-        print ' aka '.join([n['name'] for n in names])
+        print(' aka '.join([n['name'] for n in names]))
         filepath = os.path.join(default_catdir, system)
         for name in names: # see en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
             filename = name['name'].translate(None, ' "*:<>?/|\\') + '_' + source + '.cat'
