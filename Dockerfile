@@ -51,6 +51,8 @@ RUN pip install cryptography==2.4.1 astropy matplotlib==2.2.5 pyraf mysql-python
 
 RUN pip install sep==1.0.3 git+https://github.com/dguevel/PyZOGY.git
 
+RUN pip install ipdb
+
 RUN apt-get --allow-releaseinfo-change update && \
         apt-get install -y libxml2-dev libxslt-dev tclsh libxmlrpc-c++8-dev && \ 
         git clone https://github.com/SAOImageDS9/SAOImageDS9 && \
