@@ -188,7 +188,7 @@ def db_ingest(filepath, filename, table, force=False): #now accepts table input
     global telescopeids, instrumentids
 
     if table == 'spec': 
-        db_to_hdrkey = spec_to_hdrkey\
+        db_to_hdrkey = spec_to_hdrkey
         
     if table == 'speclcoraw': 
         db_to_hdrkey = speclcoraw_to_hdrkey
@@ -326,7 +326,7 @@ if __name__ == "__main__":
             dbdict = db_ingest(filepath, filename, args.force_db)
             if '-en' not in filename:
                 fullpaths.append(filepath + filename)
-            elif '-e91' in filename:
+            elif '-e00' in filename:
                 fits2png(filepath + filename, args.force_tn)
         else:
             record_floyds_tar_link(authtoken, frame, args.force_gl)

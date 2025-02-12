@@ -37,17 +37,17 @@ except ValueError as e:
     logger.info('Getting throttled: {error}'.format(error = str(e)))
     sys.exit()
 
-# frames = get_metadata(authtoken, start=start, end=end, OBSTYPE='EXPOSE', RLEVEL=91, public=False)       # all images where SNEx is a co-I
-# for telid in ['2m0a', '1m0a', '0m4a', '0m4b', '0m4c']:
-#     frames += get_metadata(authtoken, start=start, end=end, PROPID='Photometric standards', OBSTYPE='STANDARD', TELID=telid, RLEVEL=91)  # all photometric standards (except SQA)
-#     frames += get_metadata(authtoken, start=start, end=end, PROPID='Photometric standards', OBSTYPE='EXPOSE', TELID=telid, RLEVEL=91)  # all photometric standards (except SQA)
+frames = get_metadata(authtoken, start=start, end=end, OBSTYPE='EXPOSE', RLEVEL=91, public=False)       # all images where SNEx is a co-I
+for telid in ['2m0a', '1m0a', '0m4a', '0m4b', '0m4c']:
+    frames += get_metadata(authtoken, start=start, end=end, PROPID='Photometric standards', OBSTYPE='STANDARD', TELID=telid, RLEVEL=91)  # all photometric standards (except SQA)
+    frames += get_metadata(authtoken, start=start, end=end, PROPID='Photometric standards', OBSTYPE='EXPOSE', TELID=telid, RLEVEL=91)  # all photometric standards (except SQA)
 frames = get_metadata(authtoken, start=start, end=end, INSTRUME='en06', basename = 'e91-1d', public=False)        # all FTN spectra SNEx is a co-I, increases RLEVEL for Banzai-floyds
 frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en05',  basename = 'e91-1d', public=False)        # all FTS spectra SNEx is a co-I, increases RLEVEL for Banzai-floyds
 frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en12',  basename = 'e91-1d', public=False)        # all FTS spectra SNEx is a co-I, increases RLEVEL for Banzai-floyds
-# frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en06', reduction_level=91, PROPID='FLOYDS standards')  # FTN standard star spectra, increases RLEVEL for Banzai-floyds
-# frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en05', reduction_level=91, PROPID='FLOYDS standards')  # FTS standard star spectra, increases RLEVEL for Banzai-floyds
-# frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en12', reduction_level=91, PROPID='FLOYDS standards')  # FTS standard star spectra, increases RLEVEL for Banzai-floyds
-# frames += get_metadata(authtoken, start=start, end=end, PROPID='LCOEPO2016B-001', reduction_level=91)            # supernova tracker images
+frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en06', RLEVEL=0, PROPID='FLOYDS standards')  # FTN standard star spectra
+frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en05', RLEVEL=0, PROPID='FLOYDS standards')  # FTS standard star spectra
+frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en12', RLEVEL=0, PROPID='FLOYDS standards')  # FTS standard star spectra
+frames += get_metadata(authtoken, start=start, end=end, PROPID='LCOEPO2016B-001', RLEVEL=91)            # supernova tracker images
 
 logger.info('Total number of frames: {:d}'.format(len(frames)))
 
@@ -61,8 +61,7 @@ for frame in frames:
         logger.error('!!! FAILED TO DOWNLOAD {}'.format(frame['filename']))
         traceback.print_exc()
         continue
-    import ipdb
-    ipdb.set_trace()
+
     try:
         if '-en' in filename: #ingesting the 1d spectra into both speclcoraw and spec
             table_raw = 'speclcoraw' # this table is what the scheduler checks, shouldn't be updated with versions
@@ -86,12 +85,12 @@ for frame in frames:
 lsc.mysqldef.ingestredu(fullpaths) # ingest new data into photlco
 
 # add links to FLOYDS guider frames in database
-# frames = get_metadata(authtoken, start=start, end=end, INSTRUME='en06', RLEVEL=91, public=False)  # all FTN spectra SNEx is a co-I, RLEVEL for Banzai-floyds
-# frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en05', RLEVEL=91, public=False) # all FTS spectra SNEx is a co-I, RLEVEL for Banzai-floyds
-# frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en12', RLEVEL=91, public=False) # all FTS spectra SNEx is a co-I, RLEVEL for Banzai-floyds
-# frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en06', RLEVEL=91, PROPID='FLOYDS standards')  # FTN standard star spectra, RLEVEL for Banzai-floyds
-# frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en05', RLEVEL=91, PROPID='FLOYDS standards')  # FTS standard star spectra, RLEVEL for Banzai-floyds
-# frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en12', RLEVEL=91, PROPID='FLOYDS standards')  # FTS standard star spectra, RLEVEL for Banzai-floyds
+frames = get_metadata(authtoken, start=start, end=end, INSTRUME='en06', RLEVEL=91, public=False)  # all FTN spectra SNEx is a co-I, RLEVEL for Banzai-floyds
+frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en05', RLEVEL=91, public=False) # all FTS spectra SNEx is a co-I, RLEVEL for Banzai-floyds
+frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en12', RLEVEL=91, public=False) # all FTS spectra SNEx is a co-I, RLEVEL for Banzai-floyds
+frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en06', RLEVEL=91, PROPID='FLOYDS standards')  # FTN standard star spectra, RLEVEL for Banzai-floyds
+frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en05', RLEVEL=91, PROPID='FLOYDS standards')  # FTS standard star spectra, RLEVEL for Banzai-floyds
+frames += get_metadata(authtoken, start=start, end=end, INSTRUME='en12', RLEVEL=91, PROPID='FLOYDS standards')  # FTS standard star spectra, RLEVEL for Banzai-floyds
 
 for frame in frames:
     try:
