@@ -70,9 +70,10 @@ for frame in frames:
         if '-en' in filename: #ingesting the 1d spectra into both speclcoraw and spec
             table_raw = 'speclcoraw' # this table is what the scheduler checks, shouldn't be updated with versions
             dbdict = db_ingest(filepath, filename,table_raw)
+        if 'e91-1d' in filename: # only ingest the banzai floyds directly into spec
             table_reduced = 'spec' # this table will track version control of spectra that get re-reduced
             dbdict = db_ingest(filepath, filename,table_reduced)
-        else:
+        if '-en' not in filename and 'e91-1d' not in filename: # all others are photlcoraw
             table = 'photlcoraw'
             dbdict = db_ingest(filepath, filename,table)
     except:

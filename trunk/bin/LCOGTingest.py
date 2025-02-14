@@ -41,7 +41,7 @@ def get_metadata(authtoken={}, limit=None, **kwargs):
         frames += response['results']
     return frames[:limit]
 
-def download_frame(frame, force=False):
+def download_frame(frame, force=True):
     '''Download a single image from the LCOGT archive and put it in the right directory'''
     filename = frame['filename']
     dayobs = re.search('(20\d\d)(0\d|1[0-2])([0-2]\d|3[01])', filename).group()
@@ -84,7 +84,7 @@ def download_frame(frame, force=False):
         filename = frame['filename']
         with open(filepath + filename, 'wb') as f:
             f.write(requests.get(frame['url']).content)
-
+            
     if filename[-3:] == '.fz' and (not os.path.isfile(filepath + filename[:-3]) or force):
         logger.info('unpacking {}'.format(filename))
         if os.path.exists(filepath + filename[:-3]):
@@ -153,6 +153,20 @@ speclcoraw_to_hdrkey = {'objname': 'OBJECT',
                         'fwhm': 'AGFWHM',
                         'tracknumber': 'TRACKNUM'}
 
+spec_to_hdrkey = {'objname': 'OBJECT',
+                        'dayobs': 'DAY-OBS',
+                        'dateobs': 'DATE-OBS',
+                        'ut': 'UTSTART',
+                        'mjd': 'MJD-OBS',
+                        'exptime': 'EXPTIME',
+                        'filter': 'FILTER',
+                        'telescope': 'TELESCOP',
+                        'instrument': 'INSTRUME',
+                        'airmass': 'AIRMASS',
+                        'slit': 'APERWID',
+                        'ra0': 'RA',
+                        'dec0': 'DEC'}
+
 def get_groupidcode(hdr):
     if 'tracknum' in hdr and hdr['tracknum'] != 'UNSPECIFIED':
         result = lsc.mysqldef.query(['''select obsrequests.groupidcode, obsrequests.targetid
@@ -169,23 +183,27 @@ def get_groupidcode(hdr):
     groupidcode = result[0]['groupidcode']
     return groupidcode, targetid
 
-def db_ingest(filepath, filename, force=False):
+def db_ingest(filepath, filename, table, force=False): #now accepts table input
     '''Read an image header and add a row to the database'''
     global telescopeids, instrumentids
-    if '-en' in filename:
-        table = 'speclcoraw'
+
+    if table == 'spec': 
+        db_to_hdrkey = spec_to_hdrkey
+        
+    if table == 'speclcoraw': 
         db_to_hdrkey = speclcoraw_to_hdrkey
-    else:
-        table = 'photlcoraw'
+    
+    if table == 'photlcoraw':
         db_to_hdrkey = photlcoraw_to_hdrkey
+
     fileindb = lsc.mysqldef.getfromdataraw(conn, table, 'filename', filename, column2='filepath')
     if fileindb:
         filepath = fileindb[0]['filepath'] # could be marked as bad
     if not fileindb or force:
         if filename[-3:] == '.fz':
-            hdr = fits.getheader(filepath + filename, 1)
+            hdr = fits.getheader(filepath + filename, 1) # from banzai file format
         else:
-            hdr = fits.getheader(filepath + filename)
+            hdr = fits.getheader(filepath + filename) # from banzai file format
         groupidcode, targetid = get_groupidcode(hdr)
         dbdict = {'filename': filename,
                   'filepath': filepath,
@@ -228,9 +246,9 @@ def db_ingest(filepath, filename, force=False):
 def fits2png(filename, force=False, zclip=5):
     if not os.path.isfile(filename.replace('.fits', '.png')) or force:
         data = fits.getdata(filename)
-        z1 = np.percentile(data, zclip)
-        z2 = np.percentile(data, 100-zclip)
-        imsave(filename.replace('.fits', '.png'), data, cmap='gray', vmin=z1, vmax=z2, origin='lower')
+        z1 = np.percentile(data.data, zclip)
+        z2 = np.percentile(data.data, 100-zclip)
+        imsave(filename.replace('.fits', '.png'), data.data, cmap='gray', vmin=z1, vmax=z2, origin='lower')
 
 def record_floyds_tar_link(authtoken, frame, force=False):
     linkindb = lsc.mysqldef.query(["select link from speclcoguider where blockid={:d}".format(frame['BLKUID'])], conn)
@@ -308,7 +326,7 @@ if __name__ == "__main__":
             dbdict = db_ingest(filepath, filename, args.force_db)
             if '-en' not in filename:
                 fullpaths.append(filepath + filename)
-            elif '-e00.fits' in filename:
+            elif '-e00' in filename:
                 fits2png(filepath + filename, args.force_tn)
         else:
             record_floyds_tar_link(authtoken, frame, args.force_gl)
