@@ -246,9 +246,9 @@ def db_ingest(filepath, filename, table, force=False): #now accepts table input
 def fits2png(filename, force=False, zclip=5):
     if not os.path.isfile(filename.replace('.fits', '.png')) or force:
         data = fits.getdata(filename)
-        z1 = np.percentile(data, zclip)
-        z2 = np.percentile(data, 100-zclip)
-        imsave(filename.replace('.fits', '.png'), data, cmap='gray', vmin=z1, vmax=z2, origin='lower')
+        z1 = np.percentile(data.data, zclip)
+        z2 = np.percentile(data.data, 100-zclip)
+        imsave(filename.replace('.fits', '.png'), data.data, cmap='gray', vmin=z1, vmax=z2, origin='lower')
 
 def record_floyds_tar_link(authtoken, frame, force=False):
     linkindb = lsc.mysqldef.query(["select link from speclcoguider where blockid={:d}".format(frame['BLKUID'])], conn)
@@ -328,7 +328,7 @@ if __name__ == "__main__":
             dbdict = db_ingest(filepath, filename, args.force_db)
             if '-en' not in filename:
                 fullpaths.append(filepath + filename)
-            elif '-e00.fits' in filename:
+            elif '-e00' in filename:
                 fits2png(filepath + filename, args.force_tn)
         else:
             record_floyds_tar_link(authtoken, frame, args.force_gl)
