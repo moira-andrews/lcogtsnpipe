@@ -295,7 +295,7 @@ def run_wcs(imglist, interactive=False, redo=False, _xshift=0, _yshift=0, catalo
             elif mode == 'astrometry':
                 lsc.lscastrodef.run_astrometry(_dir + img, True, redo)
             else:
-                print(str(_mode)+' not defined')
+                print(str(mode)+' not defined')
         elif status == 0:
             print('status ' + str(status) + ': WCS stage not done')
         elif status == -1:
