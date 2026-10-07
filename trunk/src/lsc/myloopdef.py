@@ -1844,7 +1844,7 @@ def get_list(epoch=None, _telescope='all', _filter='', _bad='', _name='', _id=''
         for i in range(0, len(lista)):
             for jj in lista[0].keys(): ll0[jj].append(lista[i][jj])
 
-        inds = np.argsort(ll0['mjd'])  #  sort by mjd
+        inds = np.argsort([-np.inf if mjd is None else mjd for mjd in ll0['mjd']])  #  sort by mjd
         for i in ll0.keys():
             ll0[i] = np.take(ll0[i], inds)
 
